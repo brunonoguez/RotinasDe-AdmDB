@@ -1,0 +1,29 @@
+
+
+USE uc4atividades;
+
+CREATE USER 'relatorios'@'localhost' IDENTIFIED BY '123';
+CREATE ROLE 'relatorio_user';
+
+GRANT SELECT ON uc4atividades.* TO 'relatorio_user';
+
+GRANT 'relatorio_user' TO 'relatorios'@'localhost'; -- Designando a role para o usuário
+
+FLUSH PRIVILEGES;
+
+/* Atividade 2 */
+
+CREATE ROLE 'funcionario_user'; -- Criação da role para garantir privilégios específicos 
+CREATE USER 'funcionario'@'localhost' IDENTIFIED BY '321'; -- Criação de usuário definido por nome e senha
+
+GRANT 'funcionario_user' TO 'funcionario'@'localhost';  -- Designando a role para o usuário
+
+GRANT SELECT ON uc4atividades.venda TO 'funcionario'@'localhost';  -- Garantindo privilégios para determinada role
+GRANT SELECT ON uc4atividades.produto TO 'funcionario'@'localhost';
+GRANT SELECT ON uc4atividades.cliente TO 'funcionario'@'localhost';
+
+FLUSH PRIVILEGES;  -- Atualizando
+
+SHOW GRANTS FOR 'funcionario'@'localhost';  -- Exibindo os privilégios do usuario
+
+SELECT * FROM mysql.user;
