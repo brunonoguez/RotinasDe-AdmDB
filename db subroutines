@@ -7,7 +7,7 @@ USE uc4atividades;
 DELIMITER //
 CREATE PROCEDURE produtosCliente (id_cliente INT, data_inicial DATE, data_final DATE)
 
-BEGIN
+BEGIN 
 
 SELECT C.id, C.nome, V.id, V.data, V.data_envio, I.nome_produto, I.quantidade FROM cliente AS C
 INNER JOIN venda AS V ON (C.id=V.cliente_id) INNER JOIN item_venda AS I ON (V.id=I.venda_id) 
