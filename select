@@ -1,0 +1,39 @@
+USE uc4atividades;
+
+/* C O N S U L T A  (1)
+consulta para um relatório de todas as vendas pagas em dinheiro. Necessários para o relatório data da venda, valor total;
+produtos vendidos, quantidade e valor unitário; nome do cliente, cpf e telefone. Ordena-se pela data de venda, as mais recentes primeiro.*/
+
+CREATE VIEW relatorio AS
+SELECT V.data, IT.nome_produto, IT.quantidade, IT.valor_unitario, V.tipo_pagamento, C.nome, C.cpf, C.telefone FROM venda AS V INNER JOIN
+	item_venda AS IT ON (V.id=IT.venda_id) INNER JOIN cliente AS C ON (V.cliente_id=C.id) WHERE V.tipo_pagamento='D' ORDER BY V.data_pagamento DESC,
+    (SELECT(IT.valor_unitario*IT.quantidade) AS total_Venda);
+    
+CREATE INDEX idx_produto ON item_venda(nome_produto, valor_unitario);
+EXPLAIN SELECT * FROM relatorio WHERE nome_produto LIKE 'A%' AND valor_unitario >200;
+
+/* C O N S U L T A  (2)
+consulta para encontrar todas as vendas de produtos de um dado fabricante. Mostrar dados do produto, quantidade vendida, data da venda.
+Ordena-se pelo nome do produto.*/
+
+CREATE VIEW vendas_fabricante AS
+SELECT P.id, P.nome, P.descricao, P.estoque, P.fabricante, IV.quantidade, V.data_pagamento AS data_da_venda FROM produto AS P INNER JOIN
+item_venda AS IV ON (P.id=IV.produto_id) INNER JOIN venda AS V ON (V.id=IV.venda_id) WHERE P.fabricante LIKE '%lar%'
+	ORDER BY P.nome;
+    
+CREATE INDEX idx_nome ON produto(nome);
+
+SELECT * FROM vendas_fabricante;
+EXPLAIN SELECT * FROM vendas_fabricante WHERE estoque > 2 AND nome LIKE 'A%';
+ 
+/* C O N S U L T A  (3)
+Relatório de vendas de produto por cliente. Mostrar dados do cliente, dados do produto e valor e quantidade totais de venda ao cliente de cada produto.
+
+SELECT C.id, C.nome, C.cpf, C.endereco, C.telefone, P.id, P.nome, P.descricao, P.estoque, P.fabricante, IV.quantidade FROM produto AS P
+INNER JOIN item_venda AS IV ON (IV.produto_id=P.id) INNER JOIN cliente AS C ON (C.id=IV.venda_id) GROUP BY IV.quantidade; */
+
+CREATE VIEW relatorio_vendas AS SELECT SUM(iv.subtotal), SUM(iv.quantidade) FROM produto p, item_venda iv, venda v, cliente c
+WHERE p.id = iv.produto_id AND v.id = iv.venda_id AND c.id = v.cliente_id
+GROUP BY c.nome, p.nome; 
+
+CREATE INDEX idx_clientes ON cliente(nome, cpf);
