@@ -1,0 +1,87 @@
+USE uc4atividades;
+
+/* Crie um stored procedure que receba id de cliente, data inicial e data final e que mostre a lista de compras realizadas pelo referido cliente
+ entre as datas informadas (incluindo essas datas), mostrando nome do cliente, id da compra, total, nome e
+ quantidade de cada produto comprado. No script, inclua o código de criação e uma chamada ao procedure.*/
+ 
+DELIMITER //
+CREATE PROCEDURE produtosCliente (id_cliente INT, data_inicial DATE, data_final DATE)
+
+BEGIN
+
+SELECT C.id, C.nome, V.id, V.data, V.data_envio, I.nome_produto, I.quantidade FROM cliente AS C
+INNER JOIN venda AS V ON (C.id=V.cliente_id) INNER JOIN item_venda AS I ON (V.id=I.venda_id) 
+    WHERE V.data >= data_inicial AND V.data <= data_final
+ORDER BY C.nome;
+
+END //
+DELIMITER ;
+
+CALL produtosCliente (2,'2020-01-10', '2021-05-03');
+
+/* Crie uma stored function que receba id de funcionário, data inicial e data final e 
+retorne a comissão total desse funcionário no período indicado. No script, inclua o código de criação e uma chamada à function.*/
+
+DELIMITER //
+CREATE FUNCTION comissaoFuncionario (id_funcionario INT,data_inicial DATE, data_final DATE) 
+RETURNS decimal(9,2) DETERMINISTIC
+
+BEGIN
+DECLARE comissao DECIMAL(9,2);
+DECLARE total_vendido DECIMAL(9,2);
+DECLARE perc_comissao DECIMAL(9,2);
+
+SET total_vendido = (
+SELECT SUM(valor_total) FROM venda 
+WHERE funcionario_id = id_funcionario
+	AND (data >= data_inicial AND data <= data_final)
+    );
+    
+SET perc_comissao = (SELECT C.comissao FROM cargo AS C, funcionario AS F 
+	WHERE F.cargo_id = C.id AND F.id = id_funcionario);
+	SET comissao = (total_vendido * perc_comissao) / 100;
+
+RETURN comissao;
+END //
+DELIMITER ;
+
+SELECT comissaoFuncionario ('4','2020-05-10', '2021-12-20');
+
+/* Crie uma stored function que receba id de cliente e retorne se o cliente é “PREMIUM” ou “REGULAR”. Um cliente é “PREMIUM”
+se já realizou mais de R$ 10 mil em compras nos últimos dois anos. Um cliente é “REGULAR” se ao contrário.
+No script, inclua o código de criação e uma chamada à function.*/
+
+DELIMITER //
+CREATE FUNCTION statusCliente (id_cliente INT, data_pagamento YEAR) RETURNS VARCHAR (7) DETERMINISTIC
+
+BEGIN
+	DECLARE categoria VARCHAR(7);   
+SELECT SUM(V.valor_total) INTO categoria
+FROM venda AS V
+	WHERE V.cliente_id=id_cliente;
+	
+IF categoria >10000 AND YEAR(data_pagamento)>=2020 THEN
+	RETURN 'Premium';
+ELSE
+	RETURN 'Regular';
+END IF;
+    
+END //
+DELIMITER ;
+
+SELECT statusCliente (2, 2020-01-10);
+
+/*Crie um trigger que atue sobre a tabela “usuário” de modo que, ao incluir um novo usuário, aplique automaticamente MD5() à coluna “senha”.*/
+
+DELIMITER //
+CREATE TRIGGER criptografa BEFORE INSERT ON usuario
+FOR EACH ROW
+
+BEGIN
+    UPDATE usuario
+    SET NEW.senha = MD5(NEW.senha);
+END //
+DELIMITER ;
+
+INSERT INTO usuario (login, senha, ultimo_login) VALUES ('Xavier', 'ABC54321', '2021-03-10 15:30:00');
+SELECT * FROM usuario;
