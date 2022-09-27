@@ -11,7 +11,7 @@ GRANT 'relatorio_user' TO 'relatorios'@'localhost'; -- Designando a role para o 
 
 FLUSH PRIVILEGES;
 
-/* Atividade 2 */
+/* Atividade 2 */ 
 
 CREATE ROLE 'funcionario_user'; -- Criação da role para garantir privilégios específicos 
 CREATE USER 'funcionario'@'localhost' IDENTIFIED BY '321'; -- Criação de usuário definido por nome e senha
